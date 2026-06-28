@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --bg:#F6F6F4; --card:#FFFFFF; --bd:#ECEAE6; --ink:#0F0F10; --mut:#71717A; --sub:#A1A1AA;
+  --amber:#F59E0B; --amber-2:#FB923C; --green:#16A34A; --green-bg:#DCFCE7; --red:#DC2626;
+  --purple:#7C5CFF; --purple-bg:#EEEAFF;
+}
+*{border-color:var(--bd)}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:#dcdcd8;border-radius:5px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.fade{animation:fadeIn .35s cubic-bezier(.22,.61,.36,1) forwards}
+@keyframes draw{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .8s linear infinite}

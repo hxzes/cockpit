@@ -1,0 +1,33 @@
+========================================
+  COCKPIT — SPUSTENIE (Windows)
+========================================
+
+1) Otvor priecinok v termináli (cmd alebo PowerShell):
+   cd "cesta\k\cockpit"
+
+2) Doplň 2 tajné kľúče do súboru .env.local:
+   - otvor .env.local v poznámkovom bloku
+   - GEMINI_API_KEY=...   (ten s billingom, konči na G68A)
+   - GOOGLE_MAPS_API_KEY=...
+   - ulož
+
+3) Nainštaluj:
+   npm install
+
+4) Spusti:
+   npm run dev
+
+5) Otvor v prehliadači:
+   http://localhost:3000
+   → presmeruje na /login → "Create one" → vytvor účet (heslo MIN 6 znakov!)
+
+========================================
+  AK NIEČO PÍŠE "missing key":
+  → over že súbor sa volá presne .env.local
+  → reštartni: Ctrl+C, potom znova npm run dev
+  → over čo vidí server: http://localhost:3000/api/health
+========================================
+
+DÔLEŽITÉ: NEUPRAVUJ ručne package.json / next.config.js / 
+postcss.config.js — sú už správne. Ak ich Windows pri 
+rozbaľovaní pokazí, rozbaľ zip ešte raz.
