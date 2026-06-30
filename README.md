@@ -1,68 +1,71 @@
 # moni cockpit
 
-Admin for your web business — clients, invoices, MRR — plus a built-in Lead Gen module and an AI copilot that can read your data and take actions. Next.js 15 + Firebase + Gemini.
+Private admin for my web agency. Clients, invoices, MRR, lead gen, and an AI copilot. Next.js 15 + Firebase + Gemini.
 
-## What's inside
-- **Dashboard** — MRR, revenue, conversion, leads. Orange line charts, green MRR sparkline. All computed live from your data.
-- **Clients** — add clients with monthly retainers; status (active/lead/churned) drives MRR.
-- **Invoices** — paid/pending/overdue, totals computed automatically.
-- **Lead Gen** — scrape businesses (Google Maps) → AI scores their site + finds the problem → AI writes the outreach → Copy & Open to send yourself. Convert a lead to a client in one click.
-- **AI Copilot** (floating, bottom-right) — sees a live snapshot of your data and answers business questions, writes messages, and proposes actions (create invoice, set status). Every action shows a confirm button — nothing is written without your click.
+## Features
+
+**Dashboard**
+- MRR, total revenue, conversion, leads — all computed live from the data
+- Line charts (MRR + revenue) with animated draw-in, MRR sparkline
+- Tasks widget and recent invoices
+
+**Clients**
+- Add clients with monthly retainers
+- Status (active / lead / churned) drives MRR
+- Add / edit / delete, status changes inline
+
+**Invoices**
+- Paid / pending / overdue, totals computed automatically
+- Paid + outstanding stat cards
+
+**Lead Gen**
+- One command bar: pick type · city · country · count from dropdowns
+- Custom city and custom lead count (type your own)
+- AI suggested searches under the bar (one click fills the bar)
+- Scrape pulls businesses from Google Maps
+- Pulls phone (Google) + Instagram handle + email from the business's own site
+- AI scores each site, finds the main problem
+- Priority sort: weak / no website floats to top (biggest opportunity)
+- AI writes the outreach + a short website audit you can send as free value
+- Copy & Open straight into IG / email (email uses the AI subject line)
+- Convert a lead to a client in one click
+
+**AI Brief** (per lead, "Open")
+- Estimated price range, close chance %, best first-contact channel
+- What we found, biggest problem, recommended subject line
+- Likely objections + answers, full call script (opening / questions / pain / close / CTA)
+
+**Leo** (copilot, bottom-right)
+- Sees a live snapshot of the data, answers business questions, writes messages
+- Proposes actions (create invoice, set status) — every action needs a confirm click, nothing writes on its own
+
+**Design**
+- Monochrome + lime accent, Geist / Geist Mono
+- Floating pill top nav, account menu (sign out is there)
+- Responsive + works as a phone app (add to home screen)
+
+## Stack
+- Next.js 15 (App Router), Firebase (Auth + Firestore), Gemini `gemini-2.5-flash`
+- Data in Firestore: `clients`, `invoices`, `projects`, `leads`
+- UI paints from a localStorage cache first, reconciles from Firestore in the background
+- Server-only keys (`GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`) stay in `/app/api/*`, never reach the browser
 
 ## Run
 1. `npm install`
-2. Copy `.env.local.example` → `.env.local`, add your **own** Gemini + Maps keys (Firebase values can stay).
+2. Copy `.env.local.example` → `.env.local`, add your own Gemini + Maps keys (Firebase values can stay)
 3. `npm run dev` → http://localhost:3000
-4. If you add keys after the server is running, restart `npm run dev` (Next reads `.env.local` only at startup).
+4. Added keys while the server was running? Restart it. Next only reads `.env.local` at startup.
 
-## Data
-- Stored in **Firestore** (collections: `clients`, `invoices`, `projects`, `leads`).
-- The UI paints instantly from a localStorage cache, then reconciles from Firestore in the background — so it never hangs on a slow connection.
-- Server-only keys (`GEMINI_API_KEY`, `GOOGLE_MAPS_API_KEY`) stay in API routes, never reach the browser.
-- Firestore rules are open for dev; add Firebase Auth before exposing this anywhere.
-- Optional: set `FIREBASE_CLIENT_EMAIL` + `FIREBASE_PRIVATE_KEY` to let the server write via Admin SDK; otherwise the client SDK handles writes.
+## Auth
+- Login at `/login`. First run: create the admin account, then sign in. All pages gated.
+- Firebase Console → Authentication → Email/Password must be enabled.
 
-## Note on the look
-Built to feel like the SaaSykit admin (light cards, orange charts, sidebar) but it's its own codebase tailored to a web agency — not a copy of their product.
+## "GEMINI_API_KEY / GOOGLE_MAPS_API_KEY missing"
+Means Next isn't reading the env file. Check in order:
+1. File named exactly `.env.local` (not `.env.local.example`, not `.txt`)
+2. Sits in the project root, next to `package.json`
+3. Restart the dev server after any change
+4. Open http://localhost:3000/api/health — it prints whether each key is present
+5. No spaces around `=`. Quotes optional.
 
-
-
-## Lead Gen — Instagram + email
-- The scraper now also pulls an Instagram handle and a contact email from each business's OWN website (public contact info), in addition to phone from Google. It does NOT scrape Instagram from Google search results (against Google TOS and fragile).
-
-## Leo (AI copilot)
-- The assistant is "leo" — writes lowercase, no diacritics, calls you Seb, sees your live data and proposes confirmable actions.
-
-
-## Troubleshooting — "GEMINI_API_KEY / GOOGLE_MAPS_API_KEY missing"
-This almost always means Next.js isn't reading your env file. Check, in order:
-1. The file must be named exactly **`.env.local`** — NOT `.env.local.example`, not `.env.local.txt`. Rename the example file.
-2. It must sit in the **project root**, next to `package.json`.
-3. **Restart** the dev server after any change: stop it (Ctrl+C) and run `npm run dev` again. Next reads `.env.local` only at startup.
-4. Verify what the server actually sees: open **http://localhost:3000/api/health** — it prints whether each key is present. If it says MISSING, it's one of the three points above.
-5. No quotes issues: `GEMINI_API_KEY=AIza...` or `GEMINI_API_KEY="AIza..."` both work; no spaces around `=`.
-
-Note: `GEMINI_API_KEY` and `GOOGLE_MAPS_API_KEY` are server-only (no `NEXT_PUBLIC_`). That's correct — they're used only inside `/app/api/*`.
-
-
-## Auth (firebase)
-- Login at `/login`. First run: "Create one" → admin account → sign in. All pages gated, redirect to /login if signed out. Sign out in sidebar.
-- Firebase Console → Authentication → Email/Password = ENABLED (done).
-
-## Lead Gen — filters + AI
-- No manual typing: pick business TYPE + CITY from chips (AI suggests the best targets on load via /api/suggest).
-- Priority sort: leads with no/weak website float to top (biggest opportunity).
-- "AI audit" button per lead = Leo writes a short website audit you can send as free value.
-
-## Model
-- gemini-2.5-flash across all routes.
-
-## Mobile
-- Responsive + hamburger drawer. Works as a phone app (add to home screen).
-
-
-## AI Sales Brief (leadgen → Open)
-Per lead, "Open" → 🧠 AI Brief tab: estimated price range, close chance %, best first-contact channel, what we found, biggest problem, recommended subject line, likely objections + answers, and a full call script (opening/questions/pain/close/CTA). All from gemini. ✉️ Sprava tab = outreach message + AI audit + Copy & Open. The email "Open" uses the AI-recommended subject automatically.
-
-## Login errors
-Login now shows human messages (weak password <6 chars, email already in use, wrong credentials, etc.) instead of silent console 400s.
+Both keys are server-only (no `NEXT_PUBLIC_`) — correct, they're used only inside `/app/api/*`.
