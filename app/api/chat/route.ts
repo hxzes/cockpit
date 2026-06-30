@@ -29,7 +29,7 @@ You MUST reply with ONLY valid JSON in this shape:
 {
   "reply": "your answer in lowercase, no diacritics",
   "action": null | {
-    "type": "create_invoice" | "create_message" | "set_lead_status" | "set_invoice_status",
+    "type": "create_invoice" | "create_message" | "set_lead_status" | "set_invoice_status" | "create_task",
     "label": "short human description for a confirm button (lowercase, no diacritics)",
     "payload": { ...fields for the action... }
   }
@@ -40,6 +40,7 @@ Action payload rules:
 - create_message: { leadOrClient, channel ("email"|"instagram"), text }
 - set_lead_status: { leadName, status ("new"|"sent"|"reply"|"client") }
 - set_invoice_status: { number, status ("paid"|"pending"|"overdue") }
+- create_task: { text, priority ("low"|"med"|"high"), due (YYYY-MM-DD or empty) }
 Only include an action when seb clearly asks to DO something. Otherwise action = null.
 Keep replies concise. Never invent data that's not in the snapshot.`
 

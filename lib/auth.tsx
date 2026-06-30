@@ -1,6 +1,6 @@
 'use client'
 
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, type User, type Auth } from 'firebase/auth'
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, type User, type Auth } from 'firebase/auth'
 import { getApps, initializeApp } from 'firebase/app'
 import { useEffect, useState } from 'react'
 
@@ -36,9 +36,5 @@ export function useAuth() {
 export async function login(e: string, p: string) {
   const a = getAuthSafe(); if (!a) throw new Error('Firebase nie je nakonfigurovany — .env.local + restart')
   return signInWithEmailAndPassword(a, e, p)
-}
-export async function register(e: string, p: string) {
-  const a = getAuthSafe(); if (!a) throw new Error('Firebase nie je nakonfigurovany — .env.local + restart')
-  return createUserWithEmailAndPassword(a, e, p)
 }
 export async function logout() { const a = getAuthSafe(); if (a) await signOut(a) }

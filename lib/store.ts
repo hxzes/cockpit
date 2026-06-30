@@ -11,13 +11,14 @@ export interface Client { id: string; name: string; company: string; email: stri
 export interface Invoice { id: string; clientName: string; number: string; amount: number; status: InvoiceStatus; createdAt: string }
 export interface Project { id: string; clientName: string; name: string; status: 'active' | 'done' | 'paused'; price: number; createdAt: string }
 export interface Lead { id: string; name: string; city: string; web: string; phone: string; email: string; ig: string; fb: string; score: number; problem: string; message: string; status: LeadStatus; createdAt: string }
+export interface Task { id: string; text: string; done: boolean; due: string; priority: 'low' | 'med' | 'high'; createdAt: string }
 
-export interface Snapshot { clients: Client[]; invoices: Invoice[]; projects: Project[]; leads: Lead[] }
+export interface Snapshot { clients: Client[]; invoices: Invoice[]; projects: Project[]; leads: Lead[]; tasks: Task[] }
 
 const CACHE = 'cockpit_cache_v1'
 
 export function useStore() {
-  const [data, setData] = useState<Snapshot>({ clients: [], invoices: [], projects: [], leads: [] })
+  const [data, setData] = useState<Snapshot>({ clients: [], invoices: [], projects: [], leads: [], tasks: [] })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,11 +26,11 @@ export function useStore() {
     let alive = true
     ;(async () => {
       try {
-        const [clients, invoices, projects, leads] = await Promise.all([
-          colGet('clients'), colGet('invoices'), colGet('projects'), colGet('leads'),
+        const [clients, invoices, projects, leads, tasks] = await Promise.all([
+          colGet('clients'), colGet('invoices'), colGet('projects'), colGet('leads'), colGet('tasks'),
         ])
         if (!alive) return
-        const fresh = { clients, invoices, projects, leads } as Snapshot
+        const fresh = { clients, invoices, projects, leads, tasks } as Snapshot
         setData(fresh)
         try { localStorage.setItem(CACHE, JSON.stringify(fresh)) } catch {}
       } catch (e) { console.error('Firestore load (using cache):', e) }
@@ -102,7 +103,27 @@ export function useStore() {
     colDelete('clients', id).catch(() => {})
   }, [])
 
-  return { data, loading, addClient, addInvoice, addLead, updateLead, setInvoiceStatus, setClientStatus, removeLead, removeInvoice, removeClient }
+  const addTask = useCallback(async (t: Omit<Task, 'id' | 'createdAt' | 'done'>) => {
+    const createdAt = new Date().toISOString()
+    const tmpId = 'local-' + Math.random().toString(36).slice(2)
+    setData(p => { const n = { ...p, tasks: [{ id: tmpId, createdAt, done: false, ...t }, ...p.tasks] }; cache(n); return n })
+    try {
+      const id = await colAdd('tasks', { ...t, done: false, createdAt })
+      setData(p => { const n = { ...p, tasks: p.tasks.map(x => x.id === tmpId ? { ...x, id } : x) }; cache(n); return n })
+    } catch (e) { console.error('addTask write failed (kept locally):', e) }
+  }, [])
+
+  const toggleTask = useCallback(async (id: string, done: boolean) => {
+    setData(p => { const n = { ...p, tasks: p.tasks.map(x => x.id === id ? { ...x, done } : x) }; cache(n); return n })
+    colUpdate('tasks', id, { done }).catch(() => {})
+  }, [])
+
+  const removeTask = useCallback(async (id: string) => {
+    setData(p => { const n = { ...p, tasks: p.tasks.filter(x => x.id !== id) }; cache(n); return n })
+    colDelete('tasks', id).catch(() => {})
+  }, [])
+
+  return { data, loading, addClient, addInvoice, addLead, updateLead, setInvoiceStatus, setClientStatus, removeLead, removeInvoice, removeClient, addTask, toggleTask, removeTask }
 }
 
 export const eur = (n: number) => '\u20AC' + (n || 0).toLocaleString('sk-SK', { maximumFractionDigits: 0 })
